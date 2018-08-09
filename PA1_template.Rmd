@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #Reproducible Research: Assessment 1
 ###By Amit Morathkar
 
@@ -6,18 +7,93 @@
 unzip(zipfile="activity.zip")
 data <- read.csv("activity.csv")
 head(data)
+=======
+---
+title: "Reproducible Research: Project 1"
+
+---
+### By Amit Morathkar
+
+
+## Loading and preprocessing the data
+
+```{r loaddata}
+unzip(zipfile="activity.zip")
+data <- read.csv("activity.csv")
+>>>>>>> ca410ed75396d3f236c6ec98b007d4d2c3bc54e9
 ```
 
 ## What is mean total number of steps taken per day?
 
-
+```{r}
+library(ggplot2)
+total.steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
+qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total.steps, na.rm=TRUE)
+median(total.steps, na.rm=TRUE)
+```
 
 ## What is the average daily activity pattern?
+```{r}
+library(ggplot2)
+avg <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
+                      FUN=mean, na.rm=TRUE)
+ggplot(data=avg, aes(x=interval, y=steps)) +
+    geom_line() +
+    xlab("5-minute interval") +
+    ylab("average number of steps taken")
+```
 
-
-
+```{r}
+avg[which.max(avg$steps),]
+```
 ## Imputing missing values
-
+Values coded with NA
+```{r Nos_missing}
+missing <- is.na(data$steps)
+# How many missing
+table(missing)
+```
+# Replace missing values with mean value of its 5 min interval
+```{r}
+add.value <- function(steps, interval) {
+    added <- NA
+    if (!is.na(steps))
+        added <- c(steps)
+    else
+        added <- (avg[avg$interval==interval, "steps"])
+    return(added)
+}
+added.data <- data
+added.data$steps <- mapply(add.value, added.data$steps, added.data$interval)
+```
+```{r}
+total.steps <- tapply(added.data$steps, added.data$date, FUN=sum)
+qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total.steps)
+median(total.steps)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+weekday.or.weekend <- function(date) {
+    day <- weekdays(date)
+    if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+        return("weekday")
+    else if (day %in% c("Saturday", "Sunday"))
+        return("weekend")
+    else
+        stop("invalid date")
+}
+added.data$date <- as.Date(added.data$date)
+added.data$day <- sapply(added.data$date, FUN=weekday.or.weekend)
+```
+
+Panel plot containing plots of average number of steps taken
+on weekdays and weekends.
+```{r}
+avg <- aggregate(steps ~ interval + day, data=added.data, mean)
+ggplot(avg, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
+    xlab("5-minute interval") + ylab("Number of steps")
+```
