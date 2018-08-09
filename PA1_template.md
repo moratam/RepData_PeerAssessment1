@@ -1,12 +1,14 @@
-#Reproducible Research: Assessment 1
-###By Amit Morathkar
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
 
 ## Loading and preprocessing the data
-```{r loaddata}
-unzip(zipfile="activity.zip")
-data <- read.csv("activity.csv")
-head(data)
-```
+
+
 
 ## What is mean total number of steps taken per day?
 
